@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>桃園市小水力發電潛力場址 Web GIS 圖台</title>
+  
+  <!-- SEO & Meta -->
+  <meta name="description" content="桃園市小水力發電潛力場址（河川排水）互動式 Web GIS 圖台與決策篩選平台">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="styles.css?v=5.0">
+</head>
+<body>
+
+  <!-- ==========================================================================
+       Header & Live KPI Ribbon
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="brand-section">
+      <div class="brand-icon">
+        <i class="fa-solid fa-water"></i>
+      </div>
+      <div class="brand-title">
+        <h1>桃園市小水力發電潛力場址 Web GIS 圖台</h1>
+        <p>Taoyuan Small Hydropower Potential GIS Dashboard</p>
+      </div>
+    </div>
+
+    <!-- Live Filter KPI Ribbon -->
+    <div class="header-kpi-ribbon">
+      <div class="kpi-item">
+        <i class="fa-solid fa-location-dot kpi-icon"></i>
+        <span class="kpi-label">篩選場址:</span>
+        <span class="kpi-val" id="kpi-count">41 / 41</span>
+      </div>
+      <div class="kpi-item">
+        <i class="fa-solid fa-bolt kpi-icon"></i>
+        <span class="kpi-label">總裝置容量:</span>
+        <span class="kpi-val" id="kpi-kw">2,456.9 kW</span>
+      </div>
+      <div class="kpi-item">
+        <i class="fa-solid fa-solar-panel kpi-icon"></i>
+        <span class="kpi-label">總年發電量:</span>
+        <span class="kpi-val" id="kpi-gen">1,075.8 萬度</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-header" id="btn-toggle-basemap">
+        <i class="fa-solid fa-map-location-dot"></i> 國土測繪圖資 (NLSC)
+      </button>
+      <button class="btn-header" id="btn-reset-filters">
+        <i class="fa-solid fa-rotate-left"></i> 重置篩選
+      </button>
+      <button class="btn-header primary" id="btn-open-guide">
+        <i class="fa-solid fa-compass"></i> 總覽導覽
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       Main Workspace (Sidebar + GIS Map)
+       ========================================================================== -->
+  <main class="app-main">
+    
+    <!-- Sidebar Panel: Search & Filters & Site Cards List -->
+    <aside class="sidebar-panel">
+      
+      <!-- Search Input -->
+      <div class="sidebar-header">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="input-search" placeholder="搜尋場址名稱、水工構造物、流域..." />
+        </div>
+      </div>
+
+      <!-- Filters Container Header with Toggle -->
+      <div class="filter-section-header" id="btn-toggle-filters">
+        <div class="filter-section-title">
+          <i class="fa-solid fa-sliders"></i>
+          <span>多重條件篩選器</span>
+        </div>
+        <i class="fa-solid fa-chevron-up toggle-icon" id="filter-toggle-icon"></i>
+      </div>
+
+      <!-- Filters Container -->
+      <div class="filters-container" id="filters-container">
+        
+        <!-- Filter Group 1: 開發條件分級 (Tier I~V) -->
+        <div class="filter-group">
+          <div class="filter-title">
+            <span><i class="fa-solid fa-award"></i> 開發條件分級</span>
+            <span class="filter-hint" id="hint-tier-count">全部</span>
+          </div>
+          <div class="tier-pills" id="tier-filter-pills">
+            <div class="tier-pill active" data-tier="ALL">全部</div>
+            <div class="tier-pill t1" data-tier="Ⅰ">第 Ⅰ 級 (13)</div>
+            <div class="tier-pill t2" data-tier="Ⅱ">第 Ⅱ 級 (12)</div>
+            <div class="tier-pill t3" data-tier="Ⅲ">第 Ⅲ 級 (3)</div>
+            <div class="tier-pill t4" data-tier="Ⅳ">第 Ⅳ 級 (3)</div>
+            <div class="tier-pill t5" data-tier="Ⅴ">第 Ⅴ 級 (10)</div>
+          </div>
+        </div>
+
+        <!-- Filter Group 2: 河川/水系流域 -->
+        <div class="filter-group">
+          <div class="filter-title">
+            <span><i class="fa-solid fa-water"></i> 河川 / 水系流域</span>
+          </div>
+          <div class="river-chips" id="river-filter-chips">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Filter Group 3: 裝置容量 (kW) Slider -->
+        <div class="filter-group">
+          <div class="filter-title">
+            <span><i class="fa-solid fa-bolt"></i> 裝置容量門檻 (kW)</span>
+            <span class="range-val" id="val-kw-slider">≥ 0 kW</span>
+          </div>
+          <div class="range-slider-wrap">
+            <input type="range" id="slider-kw" min="0" max="300" step="5" value="0" />
+          </div>
+        </div>
+
+        <!-- Filter Group 4: 年發電量 (萬度) Slider -->
+        <div class="filter-group">
+          <div class="filter-title">
+            <span><i class="fa-solid fa-chart-line"></i> 年平均發電量 (萬度)</span>
+            <span class="range-val" id="val-gen-slider">≥ 0 萬度</span>
+          </div>
+          <div class="range-slider-wrap">
+            <input type="range" id="slider-gen" min="0" max="120" step="5" value="0" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Site Cards List Header & Container -->
+      <div class="site-list-header">
+        <span><i class="fa-solid fa-list-check"></i> 場址清單</span>
+        <span class="site-count-badge" id="list-count-badge">41 個場址</span>
+      </div>
+
+      <div class="site-list-container" id="site-cards-list">
+        <!-- Rendered via JS -->
+      </div>
+
+    </aside>
+
+    <!-- Leaflet GIS Map Canvas -->
+    <section class="map-container">
+      <div id="map"></div>
+
+      <!-- NLSC Map Layers Switcher Widget (國土測繪圖資服務雲樣式) -->
+      <div class="nlsc-basemap-widget" id="nlsc-basemap-widget">
+        <div class="nlsc-widget-header">
+          <div class="nlsc-brand">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>國土測繪圖資服務雲</span>
+          </div>
+          <span class="nlsc-badge">NLSC WMTS</span>
+        </div>
+        <div class="nlsc-layers-grid">
+          <div class="nlsc-layer-btn active" data-layer="nlsc_emap">
+            <i class="fa-solid fa-map"></i>
+            <span>通用版電子地圖</span>
+          </div>
+          <div class="nlsc-layer-btn" data-layer="nlsc_photo">
+            <i class="fa-solid fa-plane-departure"></i>
+            <span>正射影像圖 (航照)</span>
+          </div>
+          <div class="nlsc-layer-btn" data-layer="nlsc_cadastral">
+            <i class="fa-solid fa-vector-square"></i>
+            <span>地籍圖 (段籍地號)</span>
+          </div>
+          <div class="nlsc-layer-btn" data-layer="nlsc_b5000">
+            <i class="fa-solid fa-draw-polygon"></i>
+            <span>1/5000 細部圖</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Floating Legend -->
+      <div class="map-legend">
+        <div class="legend-title">開發條件分級圖例</div>
+        <div class="legend-items">
+          <div class="legend-item"><span class="legend-color" style="background: var(--tier-1);"></span> 第 Ⅰ 級 (最優先)</div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--tier-2);"></span> 第 Ⅱ 級 (次優先)</div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--tier-3);"></span> 第 Ⅲ 級 (中等條件)</div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--tier-4);"></span> 第 Ⅳ 級 (基礎條件)</div>
+          <div class="legend-item"><span class="legend-color" style="background: var(--tier-5);"></span> 第 Ⅴ 級 (需額外評估)</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       Guided Overview Modal (總覽引導對話窗)
+       ========================================================================== -->
+  <div class="modal-backdrop active" id="guided-overview-modal">
+    <div class="guide-modal-content">
+      
+      <div class="guide-header">
+        <div class="guide-title">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <div>
+            <h2>桃園市小水力發電潛能探索指引</h2>
+            <p>歡迎使用桃園市河川排水小水力潛力場址 Web GIS 圖台與決策平台</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-guide"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="guide-body">
+        
+        <!-- Global KPI Grid -->
+        <div class="guide-kpi-grid">
+          <div class="guide-kpi-card">
+            <i class="fa-solid fa-location-dot" style="color: var(--primary-cyan); font-size: 20px;"></i>
+            <div class="g-kpi-num">41</div>
+            <div class="g-kpi-unit">處場址</div>
+            <div class="g-kpi-lbl">潛能評估場址</div>
+          </div>
+          <div class="guide-kpi-card">
+            <i class="fa-solid fa-bolt" style="color: var(--accent-green); font-size: 20px;"></i>
+            <div class="g-kpi-num">2,456.9</div>
+            <div class="g-kpi-unit">kW</div>
+            <div class="g-kpi-lbl">總預估裝置容量</div>
+          </div>
+          <div class="guide-kpi-card">
+            <i class="fa-solid fa-solar-panel" style="color: var(--accent-gold); font-size: 20px;"></i>
+            <div class="g-kpi-num">1,075.8</div>
+            <div class="g-kpi-unit">萬度/年</div>
+            <div class="g-kpi-lbl">總預估年發電量</div>
+          </div>
+          <div class="guide-kpi-card">
+            <i class="fa-solid fa-water" style="color: var(--primary-blue); font-size: 20px;"></i>
+            <div class="g-kpi-num">8</div>
+            <div class="g-kpi-unit">大水系</div>
+            <div class="g-kpi-lbl">涵蓋河川與區排</div>
+          </div>
+        </div>
+
+        <!-- Tier Explanation Section -->
+        <div class="tiers-explain-section">
+          <h3><i class="fa-solid fa-layer-group" style="color: var(--primary-cyan);"></i> 開發條件分級 (第 Ⅰ 級 ～ 第 Ⅴ 級) 說明</h3>
+          <div class="tier-explain-grid">
+            <div class="tier-explain-card">
+              <span class="t-exp-badge" style="background: rgba(0, 242, 254, 0.2); color: var(--tier-1); border: 1px solid var(--tier-1);">第 Ⅰ 級 (13處)</span>
+              <div class="t-exp-desc">高優先開發，發電與土地條件優良，無特殊開發限制。</div>
+            </div>
+            <div class="tier-explain-card">
+              <span class="t-exp-badge" style="background: rgba(67, 233, 123, 0.2); color: var(--tier-2); border: 1px solid var(--tier-2);">第 Ⅱ 級 (12處)</span>
+              <div class="t-exp-desc">次優先，需注意住宅噪音控制、配合改建或降高計畫。</div>
+            </div>
+            <div class="tier-explain-card">
+              <span class="t-exp-badge" style="background: rgba(246, 211, 101, 0.2); color: var(--tier-3); border: 1px solid var(--tier-3);">第 Ⅲ 級 (3處)</span>
+              <div class="t-exp-desc">中等條件，主要位於新街溪排水幹線區段。</div>
+            </div>
+            <div class="tier-explain-card">
+              <span class="t-exp-badge" style="background: rgba(253, 160, 133, 0.2); color: var(--tier-4); border: 1px solid var(--tier-4);">第 Ⅳ 級 (3處)</span>
+              <div class="t-exp-desc">基礎條件，主要位於茄苳溪區段場址。</div>
+            </div>
+            <div class="tier-explain-card">
+              <span class="t-exp-badge" style="background: rgba(255, 65, 108, 0.2); color: var(--tier-5); border: 1px solid var(--tier-5);">第 Ⅴ 級 (10處)</span>
+              <div class="t-exp-desc">現勘流量偏少、位於改道範圍或需額外水文評估。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Presets Section -->
+        <div class="presets-section">
+          <h3><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-gold);"></i> 快速探索主題捷徑</h3>
+          <div class="presets-grid">
+            <button class="btn-preset" id="preset-tier1">
+              <div class="preset-icon"><i class="fa-solid fa-star"></i></div>
+              <div class="preset-info">
+                <h4>最優先開發 (第 Ⅰ 級場址)</h4>
+                <p>快速過濾 13 處最具開發可行性之特優場址</p>
+              </div>
+            </button>
+            <button class="btn-preset" id="preset-high-kw">
+              <div class="preset-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+              <div class="preset-info">
+                <h4>高容量場址 (≥ 100 kW)</h4>
+                <p>篩選坑子口圳與 4 號攔河堰等大型水力點位</p>
+              </div>
+            </button>
+            <button class="btn-preset" id="preset-nankan">
+              <div class="preset-icon"><i class="fa-solid fa-water"></i></div>
+              <div class="preset-info">
+                <h4>南崁溪流域主題 (7處)</h4>
+                <p>查看水頭與流量充沛之南崁溪主流水力點</p>
+              </div>
+            </button>
+            <button class="btn-preset" id="preset-laojie">
+              <div class="preset-icon"><i class="fa-solid fa-bridge-water"></i></div>
+              <div class="preset-info">
+                <h4>老街溪流域主題 (15處)</h4>
+                <p>探索桃園場址數量最多之老街溪水系點位</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="guide-footer">
+        <button class="btn-header primary" id="btn-start-explore">
+          <i class="fa-solid fa-play"></i> 直接進入圖台探索
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       Full Site Primary Evaluation Modal (對照 chrome_5lRckHqWGg.png)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="site-eval-modal">
+    <div class="eval-modal-content">
+      
+      <!-- Modal Header -->
+      <div class="eval-header">
+        <div class="eval-header-title">
+          <h2 id="eval-modal-title">南崁溪坑子口圳攔河堰小水力</h2>
+          <span class="tier-badge t1" id="eval-modal-tier-badge">第 Ⅰ 級</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-eval"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="eval-body">
+        
+        <!-- Photo Lightbox Gallery -->
+        <div class="gallery-section" id="gallery-section">
+          <div class="hero-image-wrap">
+            <img id="eval-hero-img" src="" alt="攔水堰現場照片" />
+          </div>
+          <div class="thumbnails-row" id="eval-thumbs-row">
+            <!-- Thumbnails rendered via JS -->
+          </div>
+        </div>
+
+        <!-- 📌 1. 基本資料與開發分級 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-circle-info"></i> 基本資料與開發分級
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">位置說明</td>
+              <td class="field-val" id="ev-location">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">開發條件分級</td>
+              <td class="field-val"><span id="ev-tier-text" class="val-highlight">-</span></td>
+            </tr>
+            <tr>
+              <td class="field-name">其他注意事項</td>
+              <td class="field-val" id="ev-notes" style="color: var(--accent-gold);">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">TWD97座標 / WGS84經緯度</td>
+              <td class="field-val" id="ev-coord">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">水系 / 河川名稱</td>
+              <td class="field-val" id="ev-river">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">既有/規劃水利建造物</td>
+              <td class="field-val" id="ev-struct">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">開發樣態</td>
+              <td class="field-val" id="ev-dev-type">-</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- ⚡ 2. 發電潛能條件 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-bolt"></i> 發電潛能條件
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">設計流量 (Q50%)</td>
+              <td class="field-val" id="ev-q50">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">設計水頭 (H)</td>
+              <td class="field-val" id="ev-head">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">裝置容量 (kW)</td>
+              <td class="field-val"><span id="ev-kw" class="val-highlight">-</span></td>
+            </tr>
+            <tr>
+              <td class="field-name">預估年發電量 (萬度/年)</td>
+              <td class="field-val"><span id="ev-gen" class="val-highlight">-</span></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 🏞 3. 土地條件 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-tree"></i> 土地條件
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">公私有地權屬</td>
+              <td class="field-val" id="ev-land-owner">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">是否涉及原住民土地</td>
+              <td class="field-val" id="ev-indigenous">-</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 🌿 4. 生態及環境條件 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-leaf"></i> 生態及環境條件
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">涉及環境保護敏感項目</td>
+              <td class="field-val" id="ev-ecology">-</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 🔌 5. 饋線及交通條件 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-plug"></i> 饋線及交通條件
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">可併網之饋線距離</td>
+              <td class="field-val" id="ev-grid">-</td>
+            </tr>
+            <tr>
+              <td class="field-name">道路聯外交通距離</td>
+              <td class="field-val" id="ev-road">-</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- 🤝 6. 可結合推動事項 -->
+        <div class="eval-block">
+          <div class="eval-block-title">
+            <i class="fa-solid fa-handshake"></i> 可結合推動事項
+          </div>
+          <table class="eval-table">
+            <tr>
+              <td class="field-name">推動說明 (防災、觀光及地方經濟)</td>
+              <td class="field-val" id="ev-promotion">-</td>
+            </tr>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Synchronous Inline Data Script -->
+  <script src="sites_data.js?v=5.0"></script>
+
+  <!-- App Logic Script -->
+  <script src="app.js?v=5.0"></script>
+
+</body>
+</html>
