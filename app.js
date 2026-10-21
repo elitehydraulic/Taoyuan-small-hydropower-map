@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyFilters() {
     filteredSites = allSites.filter(site => {
       if (filterState.tier !== 'ALL' && site.tier !== filterState.tier) return false;
-      if (filterState.rivers.size > 0 && !filterState.rivers.has(site.river)) return false;
+      if (filterState.rivers.size > 0 && !Array.from(filterState.rivers).some(r => site.river.includes(r))) return false;
       if (site.capacity_kw < filterState.minKw) return false;
       if (site.annual_gen_10k < filterState.minGen) return false;
       if (filterState.search) {
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // If fetch is available, update data dynamically as secondary fallback
   if (typeof fetch === 'function') {
-    fetch('sites_full_data.json')
+    fetch('sites_full_data.json?v=6.0')
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {

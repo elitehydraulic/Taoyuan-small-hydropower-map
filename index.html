@@ -20,7 +20,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
   <!-- App Styles -->
-  <link rel="stylesheet" href="styles.css?v=5.0">
+  <link rel="stylesheet" href="styles.css?v=6.0">
 </head>
 <body>
 
@@ -43,17 +43,17 @@
       <div class="kpi-item">
         <i class="fa-solid fa-location-dot kpi-icon"></i>
         <span class="kpi-label">篩選場址:</span>
-        <span class="kpi-val" id="kpi-count">41 / 41</span>
+        <span class="kpi-val" id="kpi-count">40 / 40</span>
       </div>
       <div class="kpi-item">
         <i class="fa-solid fa-bolt kpi-icon"></i>
         <span class="kpi-label">總裝置容量:</span>
-        <span class="kpi-val" id="kpi-kw">2,456.9 kW</span>
+        <span class="kpi-val" id="kpi-kw">2,193.1 kW</span>
       </div>
       <div class="kpi-item">
         <i class="fa-solid fa-solar-panel kpi-icon"></i>
         <span class="kpi-label">總年發電量:</span>
-        <span class="kpi-val" id="kpi-gen">1,075.8 萬度</span>
+        <span class="kpi-val" id="kpi-gen">960.6 萬度</span>
       </div>
     </div>
 
@@ -106,11 +106,11 @@
           </div>
           <div class="tier-pills" id="tier-filter-pills">
             <div class="tier-pill active" data-tier="ALL">全部</div>
-            <div class="tier-pill t1" data-tier="Ⅰ">第 Ⅰ 級 (13)</div>
-            <div class="tier-pill t2" data-tier="Ⅱ">第 Ⅱ 級 (12)</div>
-            <div class="tier-pill t3" data-tier="Ⅲ">第 Ⅲ 級 (3)</div>
+            <div class="tier-pill t1" data-tier="Ⅰ">第 Ⅰ 級 (11)</div>
+            <div class="tier-pill t2" data-tier="Ⅱ">第 Ⅱ 級 (11)</div>
+            <div class="tier-pill t3" data-tier="Ⅲ">第 Ⅲ 級 (2)</div>
             <div class="tier-pill t4" data-tier="Ⅳ">第 Ⅳ 級 (3)</div>
-            <div class="tier-pill t5" data-tier="Ⅴ">第 Ⅴ 級 (10)</div>
+            <div class="tier-pill t5" data-tier="Ⅴ">第 Ⅴ 級 (13)</div>
           </div>
         </div>
 
@@ -151,7 +151,7 @@
       <!-- Site Cards List Header & Container -->
       <div class="site-list-header">
         <span><i class="fa-solid fa-list-check"></i> 場址清單</span>
-        <span class="site-count-badge" id="list-count-badge">41 個場址</span>
+        <span class="site-count-badge" id="list-count-badge">40 個場址</span>
       </div>
 
       <div class="site-list-container" id="site-cards-list">
@@ -231,19 +231,19 @@
         <div class="guide-kpi-grid">
           <div class="guide-kpi-card">
             <i class="fa-solid fa-location-dot" style="color: var(--primary-cyan); font-size: 20px;"></i>
-            <div class="g-kpi-num">41</div>
+            <div class="g-kpi-num" id="guide-kpi-count">40</div>
             <div class="g-kpi-unit">處場址</div>
             <div class="g-kpi-lbl">潛能評估場址</div>
           </div>
           <div class="guide-kpi-card">
             <i class="fa-solid fa-bolt" style="color: var(--accent-green); font-size: 20px;"></i>
-            <div class="g-kpi-num">2,456.9</div>
+            <div class="g-kpi-num" id="guide-kpi-kw">2,193.1</div>
             <div class="g-kpi-unit">kW</div>
             <div class="g-kpi-lbl">總預估裝置容量</div>
           </div>
           <div class="guide-kpi-card">
             <i class="fa-solid fa-solar-panel" style="color: var(--accent-gold); font-size: 20px;"></i>
-            <div class="g-kpi-num">1,075.8</div>
+            <div class="g-kpi-num" id="guide-kpi-gen">960.6</div>
             <div class="g-kpi-unit">萬度/年</div>
             <div class="g-kpi-lbl">總預估年發電量</div>
           </div>
@@ -260,15 +260,15 @@
           <h3><i class="fa-solid fa-layer-group" style="color: var(--primary-cyan);"></i> 開發條件分級 (第 Ⅰ 級 ～ 第 Ⅴ 級) 說明</h3>
           <div class="tier-explain-grid">
             <div class="tier-explain-card">
-              <span class="t-exp-badge" style="background: rgba(0, 242, 254, 0.2); color: var(--tier-1); border: 1px solid var(--tier-1);">第 Ⅰ 級 (13處)</span>
+              <span class="t-exp-badge" style="background: rgba(0, 242, 254, 0.2); color: var(--tier-1); border: 1px solid var(--tier-1);">第 Ⅰ 級 (11處)</span>
               <div class="t-exp-desc">高優先開發，發電與土地條件優良，無特殊開發限制。</div>
             </div>
             <div class="tier-explain-card">
-              <span class="t-exp-badge" style="background: rgba(67, 233, 123, 0.2); color: var(--tier-2); border: 1px solid var(--tier-2);">第 Ⅱ 級 (12處)</span>
+              <span class="t-exp-badge" style="background: rgba(67, 233, 123, 0.2); color: var(--tier-2); border: 1px solid var(--tier-2);">第 Ⅱ 級 (11處)</span>
               <div class="t-exp-desc">次優先，需注意住宅噪音控制、配合改建或降高計畫。</div>
             </div>
             <div class="tier-explain-card">
-              <span class="t-exp-badge" style="background: rgba(246, 211, 101, 0.2); color: var(--tier-3); border: 1px solid var(--tier-3);">第 Ⅲ 級 (3處)</span>
+              <span class="t-exp-badge" style="background: rgba(246, 211, 101, 0.2); color: var(--tier-3); border: 1px solid var(--tier-3);">第 Ⅲ 級 (2處)</span>
               <div class="t-exp-desc">中等條件，主要位於新街溪排水幹線區段。</div>
             </div>
             <div class="tier-explain-card">
@@ -276,7 +276,7 @@
               <div class="t-exp-desc">基礎條件，主要位於茄苳溪區段場址。</div>
             </div>
             <div class="tier-explain-card">
-              <span class="t-exp-badge" style="background: rgba(255, 65, 108, 0.2); color: var(--tier-5); border: 1px solid var(--tier-5);">第 Ⅴ 級 (10處)</span>
+              <span class="t-exp-badge" style="background: rgba(255, 65, 108, 0.2); color: var(--tier-5); border: 1px solid var(--tier-5);">第 Ⅴ 級 (13處)</span>
               <div class="t-exp-desc">現勘流量偏少、位於改道範圍或需額外水文評估。</div>
             </div>
           </div>
@@ -290,7 +290,7 @@
               <div class="preset-icon"><i class="fa-solid fa-star"></i></div>
               <div class="preset-info">
                 <h4>最優先開發 (第 Ⅰ 級場址)</h4>
-                <p>快速過濾 13 處最具開發可行性之特優場址</p>
+                <p>快速過濾 11 處最具開發可行性之特優場址</p>
               </div>
             </button>
             <button class="btn-preset" id="preset-high-kw">
@@ -303,14 +303,14 @@
             <button class="btn-preset" id="preset-nankan">
               <div class="preset-icon"><i class="fa-solid fa-water"></i></div>
               <div class="preset-info">
-                <h4>南崁溪流域主題 (7處)</h4>
+                <h4>南崁溪流域主題 (6處)</h4>
                 <p>查看水頭與流量充沛之南崁溪主流水力點</p>
               </div>
             </button>
             <button class="btn-preset" id="preset-laojie">
               <div class="preset-icon"><i class="fa-solid fa-bridge-water"></i></div>
               <div class="preset-info">
-                <h4>老街溪流域主題 (15處)</h4>
+                <h4>老街溪流域主題 (11處)</h4>
                 <p>探索桃園場址數量最多之老街溪水系點位</p>
               </div>
             </button>
@@ -487,10 +487,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- Synchronous Inline Data Script -->
-  <script src="sites_data.js?v=5.0"></script>
+  <script src="sites_data.js?v=6.0"></script>
 
   <!-- App Logic Script -->
-  <script src="app.js?v=5.0"></script>
+  <script src="app.js?v=6.0"></script>
 
 </body>
 </html>
